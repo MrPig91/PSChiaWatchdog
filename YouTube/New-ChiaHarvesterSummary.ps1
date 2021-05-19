@@ -15,19 +15,21 @@ while ($true){
         $_.Time = [datetime]$_.Time
         $_
     }
-    $FarmerEvents = Import-Csv -path $FarmerPath | foreach {
-        $_.Time = [datetime]$_.Time
-        $_
+    if (Test-Path -Path $FarmerPath){
+        $FarmerEvents = Import-Csv -path $FarmerPath | foreach {
+            $_.Time = [datetime]$_.Time
+            $_
+        }
     }
 
     $HarvesterEvents = $HarvesterEvents | where Time -GT (Get-Date).AddMinutes(-$Interval)
-    $FarmerEvents = $FarmerEvents | where Time -GT (Get-Date).AddMinutes(-$Interval)
+    $FarmerEvents = $FarmerEvents | where Time -GT (Get-Date).AddMilliseconds(-$Interval)
     if ($HarvesterEvents){
         $LookUpStats = $HarvesterEvents | Measure-Object -property LookUpTime -Minimum -Maximum -Average
         $ProofsFound = ($HarvesterEvents | Measure-Object -property ProofsFound -Sum).Sum
         $PassFilter = ($HarvesterEvents | Measure-Object -property FilterRatio -average).Average
 
-        $Message = "Attempted Proofs: $($HarvesterEvents.Count)"
+        $Message = "Attempted Proofs: $(($HarvesterEvents | Measure-Object).Count)"
         $Message += "`nLookUpTime Stats"
         $Message += "`nMin: $([math]::Round($LookUpStats.Minimum,3)) | Max: $([math]::Round($LookUpStats.Maximum,3)) | Avg: $([math]::Round($LookUpStats.Average,3))"
         $Message += "`nFilterRatio $([math]::Round($PassFilter,4)) | Proofs: $ProofsFound | Farmed: $(($FarmerEvents | Measure-Object).Count)"
