@@ -12,18 +12,18 @@ $IntervalInSeconds = $Interval * 60
 
 while ($true){
     $HarvesterEvents = Import-Csv -path $HarvesterPath | foreach {
-        $_.Time = [datetime]$_.Time
+        $_.Time = [dateTime]::Parse($_.Time,([Globalization.CultureInfo]::CurrentCulture))
         $_
     }
     if (Test-Path -Path $FarmerPath){
         $FarmerEvents = Import-Csv -path $FarmerPath | foreach {
-            $_.Time = [datetime]$_.Time
+            $_.Time = [dateTime]::Parse($_.Time,([Globalization.CultureInfo]::CurrentCulture))
             $_
         }
     }
 
     $HarvesterEvents = $HarvesterEvents | where Time -GT (Get-Date).AddMinutes(-$Interval)
-    $FarmerEvents = $FarmerEvents | where Time -GT (Get-Date).AddMilliseconds(-$Interval)
+    $FarmerEvents = $FarmerEvents | where Time -GT (Get-Date).AddMinutes(-$Interval)
     if ($HarvesterEvents){
         $LookUpStats = $HarvesterEvents | Measure-Object -property LookUpTime -Minimum -Maximum -Average
         $ProofsFound = ($HarvesterEvents | Measure-Object -property ProofsFound -Sum).Sum
