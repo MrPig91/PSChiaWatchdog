@@ -12,14 +12,18 @@ function New-ChiaFlexPoolWatchdog {
         [Parameter(Mandatory)]
         [string]$DiscordUri,
 
-        [switch]$StaleSharePercentageEnabled,
+        [switch]$EnableStaleSharePercentageNotification,
         [int]$StaleSharePercentage = 5,
 
-        [switch]$WorkerOfflineEnabled,
+        [switch]$EnableWorkerOfflineNotification,
 
-        [switch]$NewBlockRewardEnabled,
+        [switch]$EnableNewBlockRewardNotification,
 
-        [switch]$SummaryEnabled
+        [switch]$EnableSummaryNotification,
+
+        [switch]$EnablePaymentNotification,
+
+        [switch]$EnableYouMinedABlockNotification
     )
 
     try{
@@ -35,9 +39,11 @@ function New-ChiaFlexPoolWatchdog {
         $ChiaWatchdog = [ChiaFlexPoolWatchdog]::new($Name,$IntervalInMinutes,$Address,$DiscordUri,"FlexPool")
         $ChiaWatchdog.StaleSharePercentageEnabled = $StaleSharePercentageEnabled.IsPresent
         $ChiaWatchdog.StaleSharePercentage = $StaleSharePercentage
-        $ChiaWatchdog.WorkerOfflineEnabled = $WorkerOfflineEnabled.IsPresent
-        $ChiaWatchdog.NewBlockRewardEnabled = $NewBlockRewardEnabled.IsPresent
-        $ChiaWatchdog.SummaryEnabled = $SummaryEnabled.IsPresent
+        $ChiaWatchdog.WorkerOfflineEnabled = $EnableWorkerOfflineNotification.IsPresent
+        $ChiaWatchdog.NewBlockRewardEnabled = $EnableNewBlockRewardNotification.IsPresent
+        $ChiaWatchdog.SummaryEnabled = $EnableSummaryNotification.IsPresent
+        $ChiaWatchdog.PaymentsEnabled = $EnablePaymentNotification.IsPresent
+        $ChiaWatchDog.NewBlockEnabled = $EnableYouMinedABlockNotification.IsPresent
         Export-Clixml -InputObject $ChiaWatchdog -Path "$WatchdogsPath\$Name.xml" -Force -Depth 5
         return $ChiaWatchdog
     }
