@@ -14,6 +14,10 @@ class ChiaFlexPoolWatchdog {
 
     [bool]$SummaryEnabled = $false
 
+    [bool]$PaymentsEnabled = $false
+
+    [bool]$NewBlockEnabled = $false
+
     ChiaFlexPoolWatchdog(
         [string]$Name,
         [int]$IntervalInMinutes,
