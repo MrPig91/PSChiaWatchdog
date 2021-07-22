@@ -3,7 +3,7 @@ function Start-ChiaFlexPoolWatchdog {
     param(
         [Parameter(Mandatory)]
         [ArgumentCompleter({
-            Get-ChiaWatchdog | where Name -like "*FlexPool*" ForEach-Object {
+            Get-ChiaWatchdog | where Name -like "*FlexPool*" | ForEach-Object {
                 "`"$($_.Name)`""
             }
         })]
@@ -94,6 +94,7 @@ function Start-ChiaFlexPoolWatchdog {
 
         if ($ChiaWatchDog.PaymentsEnabled){
             $payments = Get-fpMinerPayment @FlexPoolParameters -ErrorAction SilentlyContinue
+            $overview = $false
             if ($null -ne $payments){
                 $paymentStats = Get-fpMinerPaymentsStats @FlexPoolParameters
                 if ($null -eq $LastPayment -and $null -ne $paymentStats){
@@ -106,17 +107,16 @@ function Start-ChiaFlexPoolWatchdog {
                     }
                     $overview = $true
                     $DiscordFacts.Add((New-DiscordFact -Name ":moneybag: New Payment! :moneybag:" -Value $message -Inline $false))
-                    $DiscordFacts.Add((New-DiscordFact -Name "" -Value "" -Inline $false))
                 }
                 if ($null -ne $paymentStats -and $null -ne $payments){
-                    $payments.payments | where {$_.timestamp -ge $LastPayment.timestamp} | ForEach-Object{
+                    $payments.payments | where {$_.timestamp -gt $LastPayment.timestamp} | ForEach-Object -Process {
                         $message = ":date:TimeStamp: $($_.TimeStamp)`n"
                         $message += ":seedling:XCH Paid: $($_ | ConvertFrom-CoinBaseUnit -CoinTicker XCH)`n"
                         $message += ":dollar:Fiat Paid: $($_.fiatvalue.ToString("c"))`n"
                         $message += ":hourglass:Duration: $($_.duration.ToString("dd' days 'hh' hours '"))`n`n"
                         $DiscordFacts.Add((New-DiscordFact -Name ":moneybag: New Payment! :moneybag:" -Value $message -Inline $false))
+                        $overview = $true
                     }
-                    $overview = $true
                 }
                 if ($null -ne $paymentStats -and $overview -eq $true){
                     $message = ":deciduous_tree:Total XCH Paid: $(ConvertFrom-CoinBaseUnit -CoinTicker XCH -Value $paymentStats.stats.totalPaid)`n"
@@ -124,7 +124,6 @@ function Start-ChiaFlexPoolWatchdog {
                     $message += ":wastebasket:Total Fees: $($paymentStats.stats.TotalFees)`n`n"
                     $DiscordFacts.Add((New-DiscordFact -Name ":coin: Payment Stats! :coin:" -Value $message -Inline $false))
                 }
-                $overview = $false
                 $LastPayment = $paymentStats
             }
         } #if Payments
