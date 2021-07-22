@@ -74,7 +74,7 @@ function Start-ChiaFlexPoolWatchdog {
         } # if worker offline
 
         if ($ChiaWatchDog.NewBlockRewardEnabled){
-            $NewestBlockReward = Get-fpMinerBlockReward @FlexPoolParameters | where BlockNumber -gt $MostRecentBlock.BlockNumber | Sort-Object BlockNumber -Descending
+            $NewestBlockReward = Get-fpMinerBlockReward @FlexPoolParameters | where blockNumber -gt $MostRecentBlock.BlockNumber | Sort-Object BlockNumber -Descending
             foreach ($newblock in $NewestBlockReward){
                 if ($newblock.Confirmed -eq $true){
                     $confirmemoji = ":white_check_mark:"
@@ -88,8 +88,8 @@ function Start-ChiaFlexPoolWatchdog {
                 $Message += ":date:TimeStamp: $($newblock.TimeStamp)`n"
                 $Message += "$($confirmemoji)Confirmed: $($newblock.Confirmed)`n`n"
                 $DiscordFacts.Add((New-DiscordFact -Name ':gift: New Block Reward! :gift:' -Value $message -Inline $false))
+                $MostRecentBlock = $NewestBlockReward | Select-Object -First 1
             }
-            $MostRecentBlock = $NewestBlockReward | Select-Object -First 1
         } # if block reward
 
         if ($ChiaWatchDog.PaymentsEnabled){
@@ -124,7 +124,7 @@ function Start-ChiaFlexPoolWatchdog {
                     $message += ":wastebasket:Total Fees: $($paymentStats.stats.TotalFees)`n`n"
                     $DiscordFacts.Add((New-DiscordFact -Name ":coin: Payment Stats! :coin:" -Value $message -Inline $false))
                 }
-                $LastPayment = $paymentStats
+                $LastPayment = $paymentStats.LastPayment
             }
         } #if Payments
 
